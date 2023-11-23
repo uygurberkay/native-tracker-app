@@ -9,6 +9,7 @@ interface ExpensesSummaryProps {
 }
 
 const ExpensesSummary = ({ expenses, periodName }: ExpensesSummaryProps) => {
+    /*  Calculates Total Price */
     const expensesSum = expenses.reduce((sum : number, expense : any) => {
         return sum + expense.amount
     }, 0);

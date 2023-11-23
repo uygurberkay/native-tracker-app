@@ -15,6 +15,7 @@ interface ExpenseItemProps {
 const ExpenseItem = ({id, description, amount, date} : ExpenseItemProps ) => {
     const navigation = useNavigation<any>();
 
+    /* Navigate to 'ManageExpense' Navigator and takes expenseId props to that page */
     const expensePressHandler = () => {
         navigation.navigate('ManageExpense', {
             expenseId: id,

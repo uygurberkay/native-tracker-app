@@ -31,14 +31,14 @@ const styles = StyleSheet.create({
         backgroundColor: GlobalStyles.colors.primary300,
     },
     flat: {
-        backgroundColor: GlobalStyles.colors.primary100,
+        backgroundColor: GlobalStyles.colors.primary150,
     },
     buttonText: {
         color: 'white',
         textAlign: 'center',
     },
     flatText: {
-        color: GlobalStyles.colors.primary300,
+        color: GlobalStyles.colors.primary800,
     },
     pressed: {
         opacity: .75,

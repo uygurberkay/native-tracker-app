@@ -3,6 +3,8 @@ import React, { useContext, useLayoutEffect } from 'react'
 import IconButton from '../components/ui/IconButton'
 import Button from '../components/ui/Button';
 import { ExpensesContext } from '../store/expenses-context';
+import ExpenseForm from '../components/ManageExpense/ExpenseForm';
+import { deleteExpense, storeExpense, updateExpense } from '../utils/http';
 
 /* One way to solve it */
 const GlobalStyles =
@@ -14,10 +16,11 @@ const GlobalStyles =
 // import { GlobalStyles } from '../constants/styles';
 
 const ManageExpense = ({ route, navigation }: any) => {
+    const expensesCtx = useContext(ExpensesContext)
     const editedExpenseId = route.params?.expenseId
     const isEditing = !!editedExpenseId  // Converted to a boolean
 
-    const expensesCtx = useContext(ExpensesContext)
+    const selectedExpense = expensesCtx.expenses.find((expense: any) => expense.id === editedExpenseId)
 
     /* Mutable Title Option */
     useLayoutEffect(() => {
@@ -26,43 +29,45 @@ const ManageExpense = ({ route, navigation }: any) => {
         })
     },[navigation, isEditing]);
     
-    const deleteExpenseHandler = () => {
-        expensesCtx.deleteExpense(editedExpenseId)
-        navigation.goBack()
+     /* Deleting Expenses via useContext API */
+    const deleteExpenseHandler = async () => {
+        await deleteExpense(editedExpenseId);
+        expensesCtx.deleteExpense(editedExpenseId);
+        navigation.goBack();
     }
 
     const cancelHandler = () => {
         navigation.goBack()
     }
 
-    const confirmHandler = () => {
+    /* Adding and Updating Expenses via useContext API */
+    const confirmHandler = async (expenseData: any) => {
         if(isEditing) {
-            expensesCtx.updateExpense(
-                editedExpenseId,
-                {
-                description: 'Test' ,
-                amount: 19.99, 
-                date : new Date('2023-11-16')
-            } )
+            expensesCtx.updateExpense(editedExpenseId, expenseData)
+            await updateExpense(editedExpenseId,expenseData);
         }else {
-            expensesCtx.addExpense({
-                description: 'Test' ,
-                amount: 19.99, 
-                date : new Date('2023-11-16')
-            })
+            /* With Real Firebase Database */
+            const id = await storeExpense(expenseData);
+            expensesCtx.addExpense({ ...expenseData, id: id });
         }
         navigation.goBack()
     }
 
     return (
         <View style={styles.container}>
-            <View style={styles.buttonsContainer}>
-                <Button mode={'flat'} onPress={cancelHandler} style={styles.button}>Cancel</Button>
-                <Button onPress={confirmHandler} style={styles.button} mode={{}}>{isEditing ? 'Update' : 'Add'}</Button>
-            </View>
+            <ExpenseForm 
+                onCancel={cancelHandler}
+                onSubmit={confirmHandler}
+                isEditing={isEditing}
+                defaultValues={selectedExpense}
+            />
             {isEditing && (
                 <View style={styles.deleteContainer}>
-                    <IconButton icon={'trash'} size={36} color={GlobalStyles.colors.error500} onPress={deleteExpenseHandler}/>
+                    <IconButton 
+                        icon={'trash'} 
+                        size={36} 
+                        color={GlobalStyles.colors.error500} 
+                        onPress={deleteExpenseHandler}/>
                 </View>
             )}
         </View>
@@ -74,15 +79,6 @@ const styles = StyleSheet.create({
         flex: 1,
         padding: 24,
         backgroundColor: GlobalStyles.colors.primary50,
-    },
-    buttonsContainer: {
-        flexDirection: 'row',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    button: {
-        minWidth: 120,
-        marginHorizontal: 8,
     },
     deleteContainer: {
         marginTop: 16,
